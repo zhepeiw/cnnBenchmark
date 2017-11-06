@@ -7,6 +7,7 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import sys
 import os
+import hdf5storage
 
 # global config
 nbins = 121
@@ -77,17 +78,16 @@ def get_hp(X, l1filters, l2filters):
 
 
 if __name__ == '__main__':
-	PCA_filters = np.random.rand(nbins, nframes, nfilters).astype('f') # change this
 	delay_filter = np.zeros((1, deltaDelay + 1), dtype='f')
 	delay_filter[0, 0] = 1
 	delay_filter[0, -1] = -1
 	artist = 'taylorswift'
 	outdir = './' + artist + '_out/'
 
-	# X = np.random.rand(nbins, 4000).astype('f') # change this
-	# result = get_hp(X, PCA_filters, delay_filter)
-	# print(result)
-	# print(result.shape)
+	# load PCA filters
+	filter_file = 'rep1_64.mat'
+	PCA_filters = sio.loadmat(outdir + filter_file)['eigvecs']
+	PCA_filters = PCA_filters.reshape(nbins, nframes, nfilters).astype('f')
 
 	def process_refs(ref_list, max_pitch_shift=4):
 		ext = '.mat'
@@ -114,13 +114,42 @@ if __name__ == '__main__':
 			for i in range(1, max_pitch_shift + 1):
 				shiftQ = pitchshift(X, -i)
 				fpseqs[:, :, i + max_pitch_shift] = get_hp(shiftQ, PCA_filters, delay_filter)
-			DB[index] = fpseqs
+			DB[unicode("ref" + str(index))] = (fpseqs > 0)
 			index += 1
 		return DB
 
-
 	def process_queries(query_list):
-		pass
+		ext = '.mat'
+		f = open(query_list, 'r')
+		DB = {}
+		index = 1
+		for line in f:
+			# get CQT matrix file name
+			base = os.path.basename(line)
+			filename, _ = os.path.splitext(base)
+			matpath = outdir + filename + ext
+			print("-- Generating representation for {t:s}".format(t=filename))
+			# read CQT matrix
+			Q = sio.loadmat(matpath)
+			X = preprocessQspec(Q['Q']['c'][0][0])
+			# generate representation fpr unshifted version
+			fpseq = get_hp(X, PCA_filters, delay_filter)
+			DB[unicode("query" + str(index))] = (fpseq > 0)
+			index += 1
+		return DB
 
+	# process ref files
 	ref_list = './audio/taylorswift_ref.list'
-	DB = process_refs(ref_list)
+	ref_db_path = outdir + 'ref_db.mat'
+	ref_db = process_refs(ref_list)
+	ref_db_data = {u"DB": ref_db, u"hopsize": hop}
+	hdf5storage.write(ref_db_data, '.', ref_db_path, matlab_compatible=True)
+	print("Reference files database saved to {}".format(ref_db_path))
+
+	# # process query files
+	# query_list = './audio/taylorswift_query.list'
+	# query_db_path = outdir + 'query_db.mat'
+	# query_db = process_queries(query_list)
+	# query_db_data = {u"DB": query_db}
+	# hdf5storage.write(query_db_data, '.', query_db_path, matlab_compatible=True)
+	# print("Query files database saved to {}".format(query_db_path))

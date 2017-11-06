@@ -11,16 +11,16 @@ function runQueries_CNNdb(dbfile, queryRepFile, outdir)
 %
 
 db = load(dbfile); % contains fingerprints, parameter, model, hopsize
-fingerprints = db.DB;
+fingerprints = struct2cell(db.DB).';
 hopsize = db.hopsize;
 queryDB = load(queryRepFile);
-queries = queryDB.DB;
+queries = struct2cell(queryDB.DB).';
 
 tic;
-for index = 1 : size(queries,3)
+for index = 1 : length(queries)
 
     % get hashprint of the current query 
-    fpseq = queries(:,:,index); 
+    fpseq = queries{index}; 
     
     % get match scores
     R = fastMatchFpSeq(fpseq,fingerprints);
