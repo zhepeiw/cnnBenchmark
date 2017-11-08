@@ -82,10 +82,10 @@ if __name__ == '__main__':
 	delay_filter[0, 0] = 1
 	delay_filter[0, -1] = -1
 	artist = 'taylorswift'
-	outdir = './' + artist + '_out/'
+	outdir = '/pylon2/ci560sp/haunter/results/' + artist + '_out/'
 
 	# load PCA filters
-	filter_file = 'rep1_64.mat'
+	filter_file = 'hp_64b.mat'
 	PCA_filters = sio.loadmat(outdir + filter_file)['eigvecs']
 	PCA_filters = PCA_filters.reshape(nbins, nframes, nfilters).astype('f')
 
@@ -146,10 +146,10 @@ if __name__ == '__main__':
 	hdf5storage.write(ref_db_data, '.', ref_db_path, matlab_compatible=True)
 	print("Reference files database saved to {}".format(ref_db_path))
 
-	# # process query files
-	# query_list = './audio/taylorswift_query.list'
-	# query_db_path = outdir + 'query_db.mat'
-	# query_db = process_queries(query_list)
-	# query_db_data = {u"DB": query_db}
-	# hdf5storage.write(query_db_data, '.', query_db_path, matlab_compatible=True)
-	# print("Query files database saved to {}".format(query_db_path))
+	# process query files
+	query_list = './audio/taylorswift_query.list'
+	query_db_path = outdir + 'qry_db.mat'
+	query_db = process_queries(query_list)
+	query_db_data = {u"DB": query_db}
+	hdf5storage.write(query_db_data, '.', query_db_path, matlab_compatible=True)
+	print("Query files database saved to {}".format(query_db_path))

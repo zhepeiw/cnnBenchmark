@@ -5,7 +5,7 @@ reportName = 'hp_64b';
 artist = 'taylorswift';
 reflist = strcat('./audio/', artist, '_ref.list');
 querylist = strcat('./audio/', artist, '_query.list');
-outdir = strcat(artist, '_out/');
+outdir = strcat('/pylon2/ci560sp/haunter/results/', artist, '_out/');
 
 addpath('./cqt/');
 %% Parallel computing setup
@@ -13,7 +13,7 @@ curPool = gcp('nocreate');
 if (isempty(curPool))
     myCluster = parcluster('local');
     numWorkers = myCluster.NumWorkers;
-    % create a parallel pool with the number of workers in the cluster`
+    % create a parallel pool with the number of workers in the cluster
     pool = parpool(numWorkers);
 end
 
