@@ -3,6 +3,7 @@ import sys
 import numpy as np
 import csv
 from scipy.spatial.distance import hamming
+import os
 
 def trim(sig, fs, startTime, endTime, verbose=False):
     """
@@ -75,6 +76,14 @@ files = [x.strip() for x in files]
 st = []
 et = []
 timeList = input("Start and End times (.csv): ")
+
+outdir = input("Output directory with slash (i.e., ./): ")
+if os.path.isdir(outdir):
+    print("Directory {} exists".format(outdir))
+else:
+    os.makedirs(outdir)
+    print("Making directory {}".format(outdir))
+
 with open(timeList, newline='') as csvfile:
     spamreader = csv.reader(csvfile, delimiter=',', quotechar='|')
     for row in spamreader:
@@ -87,10 +96,11 @@ with open(timeList, newline='') as csvfile:
         et.append((int(row[1][0:2]), int(row[1][3:])))
 
 for i in range(len(files)): 
-    filename = files[i]
+    filepath = files[i]
     startTime = st[i]
     endTime = et[i]
     print(startTime, endTime)
-    fs, sig = scipy.io.wavfile.read(filename)
+    fs, sig = scipy.io.wavfile.read(filepath)
+    filename, ext = os.path.splitext(os.path.basename(filepath))
     fs_trim, sig_trim = trim(sig, fs, startTime, endTime)
-    scipy.io.wavfile.write(filename[0:-4]+"_trimmed.wav", fs_trim, sig_trim)
+    scipy.io.wavfile.write(outdir + filename +"_trimmed" + ext, fs_trim, sig_trim)

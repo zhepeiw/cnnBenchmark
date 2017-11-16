@@ -5,16 +5,12 @@ function [DB1, DB2] = genCQTdb(audio1, audio2, fs1, fs2, alignment)
 %   alignment is the DTW alignment path, an array of tuples
 
 fps = 1; % change this: num frames per second in the audio
-nextstart1 = 1;
 DB1 = {};
 DB2 = {};
 
 count = 0;
-for nframe = 1 : size(alignment, 1)
+for nframe = 1 : fps : size(alignment, 1)
     start1 = alignment(nframe, 1);
-    if start1 < nextstart1
-        continue;
-    end
     start2 = alignment(nframe, 2);
     if (start1 + fps <= size(audio1, 2)) && start2 + fps <= size(audio2, 2)
         % compute cqt for the one second chunks
@@ -25,7 +21,6 @@ for nframe = 1 : size(alignment, 1)
         count = count + 1;
         DB1{count} = Q1.c;
         DB2{count} = Q2.c;
-        nextstart1 = start1 + fps + 1;
     end
 end
         
