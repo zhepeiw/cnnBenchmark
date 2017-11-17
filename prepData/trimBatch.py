@@ -68,16 +68,18 @@ def writeFile(sig, fs, filename):
     return
 
 # Main Program
-fileList = input("List of audio files (.list): ")
+artist = input("Name of artist: ")
+artist = artist.lower().replace(" ", "")
+fileList = artist + "_filelist.list"
 with open(fileList) as f:
     files = f.readlines()
 files = [x.strip() for x in files]
 
 st = []
 et = []
-timeList = input("Start and End times (.csv): ")
-
+timeList = artist + "_timelist.csv"
 outdir = input("Output directory with slash (i.e., ./): ")
+
 if os.path.isdir(outdir):
     print("Directory {} exists".format(outdir))
 else:
@@ -103,4 +105,6 @@ for i in range(len(files)):
     fs, sig = scipy.io.wavfile.read(filepath)
     filename, ext = os.path.splitext(os.path.basename(filepath))
     fs_trim, sig_trim = trim(sig, fs, startTime, endTime)
-    scipy.io.wavfile.write(outdir + filename +"_trimmed" + ext, fs_trim, sig_trim)
+    savename = outdir + artist + "_ourquery" + str(i + 1).zfill(2) + ext
+    scipy.io.wavfile.write(savename, fs_trim, sig_trim)
+    print("Audio {} trimmed and saved to {}".format(filename, savename))
