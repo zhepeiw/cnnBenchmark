@@ -182,7 +182,7 @@ def outputDTWPathCSV(DTW_path, outputFile):
 
 
 import bisect
-def getAlginedAlbumTrack(DTW_path, offsets, albumTrack, fs, hop_size=512, chunkLength=6.0):
+def getAlignedAlbumTrack(DTW_path, offsets, albumTrack, fs, hop_size=512, chunkLength=6.0):
     output = np.array([])
     framePerSeconds = fs//hop_size
     for idx in range(len(offsets)):
