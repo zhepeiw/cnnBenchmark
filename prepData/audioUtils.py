@@ -60,13 +60,13 @@ def combine(leftChannel, rightChannel, fs):
     stereo = np.concatenate((leftChannel, rightChannel), axis=1)
     return stereo, fs
 
-def generateStereoRefTrack(concertTrack, albumTrack, fs, segmentLength=2, silenceLength=0.25):
+def generateStereoRefTrack(concertTrack, albumTrack, fs, segmentLength=2, silenceLength=0.25, verbose=False):
     leftChannel = np.array([])
     rightChannel = np.array([])
 
     concertTrackLength = concertTrack.shape[0]
     albumTrackLength = albumTrack.shape[0]
-    print("lenconcert = {:} lenalbum = {:}".format(concertTrackLength, albumTrackLength))
+    if(verbose): print("lenconcert = {:} lenalbum = {:}".format(concertTrackLength, albumTrackLength))
     minLength = min(concertTrackLength, albumTrackLength)
 
     # Make sure they are the same length
@@ -74,7 +74,7 @@ def generateStereoRefTrack(concertTrack, albumTrack, fs, segmentLength=2, silenc
     albumTrack = albumTrack[:minLength]
 
     currentIndex = 0
-    while currentIndex + int(fs * segmentLength) < concertTrackLength:
+    while currentIndex + int(fs * segmentLength) < minLength:
         segmentEndIndex = currentIndex + int(fs * segmentLength)
 
         # Add left channel
@@ -116,7 +116,7 @@ def writeFile(sig, fs, filename):
 def getChroma(sig, fs, hop_size=512, n_chroma=12):
     return librosa.feature.chroma_cqt(y=sig, sr=fs, hop_length=hop_size, n_chroma=n_chroma, norm=2)
 
-def getDTWpath(concertTrack, albumTrack, fs, chunkLength=6.0, hop_size=512, metric='cosine'):
+def getDTWpath(concertTrack, albumTrack, fs, chunkLength=6.0, hop_size=512, metric='cosine', verbose=False):
     """
     Get subsequence DTW path.
 
@@ -168,7 +168,7 @@ def getDTWpath(concertTrack, albumTrack, fs, chunkLength=6.0, hop_size=512, metr
             DTW_path.append(newPoint)
 
         offsetChunks.append(prefix)
-        print("Chunk {:} offset = {:}[{:}]".format(i, wp[-1][1] * hop_size / fs, prefix))
+        if(verbose): print("Chunk {:} offset = {:}[{:}]".format(i, wp[-1][1] * hop_size / fs, prefix))
 
         prefix += X_1_chroma.shape[1]
     return DTW_path, offsetChunks, concertTrackChromas, albumTrackChroma
@@ -182,7 +182,7 @@ def outputDTWPathCSV(DTW_path, outputFile):
 
 
 import bisect
-def getAlignedAlbumTrack(DTW_path, offsets, albumTrack, fs, hop_size=512, chunkLength=6.0):
+def getAlignedAlbumTrack(DTW_path, offsets, albumTrack, fs, hop_size=512, chunkLength=6.0, verbose=False):
     output = np.array([])
     framePerSeconds = fs//hop_size
     for idx in range(len(offsets)):
@@ -202,9 +202,9 @@ def getAlignedAlbumTrack(DTW_path, offsets, albumTrack, fs, hop_size=512, chunkL
         target1 = index1 + int(fs * chunkLength / 3)
         target2 = index2 + int(fs * chunkLength / 3)
         target3 = index3 + int(fs * chunkLength / 3)
-        print("index = {:} target = {:} {:}".format(index1, target1, (target1-index1)/fs))
-        print("index = {:} target = {:} {:}".format(index2, target2, (target2-index2)/fs))
-        print("index = {:} target = {:} {:}".format(index3, target3, (target3-index3)/fs))
+        if(verbose): print("index = {:} target = {:} {:}".format(index1, target1, (target1-index1)/fs))
+        if(verbose): print("index = {:} target = {:} {:}".format(index2, target2, (target2-index2)/fs))
+        if(verbose): print("index = {:} target = {:} {:}".format(index3, target3, (target3-index3)/fs))
         output = np.concatenate((output, albumTrack[index1:target1]))
         output = np.concatenate((output, albumTrack[index2:target2]))
         output = np.concatenate((output, albumTrack[index3:target3]))
