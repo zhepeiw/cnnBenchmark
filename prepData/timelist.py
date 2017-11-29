@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 
 info_csv = './data_creation.csv'
-artist = 'maroon5'
+artist = 'foofighters'
 artist = artist.lower().replace(" ", "")
 
 df = pd.read_csv(info_csv)
