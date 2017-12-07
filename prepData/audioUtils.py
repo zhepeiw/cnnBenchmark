@@ -187,9 +187,9 @@ def getAlignedAlbumTrack(DTW_path, offsets, albumTrack, fs, hop_size=512, chunkL
     framePerSeconds = fs//hop_size
     for idx in range(len(offsets)):
         currentTime = chunkLength * idx
-        mark1 = (int(framePerSeconds * currentTime), np.inf)
-        mark2 = (int(framePerSeconds * (currentTime + chunkLength / 3)), np.inf)
-        mark3 = (int(framePerSeconds * (currentTime + chunkLength * 2 / 3)), np.inf)
+        mark1 = (int(framePerSeconds * currentTime + idx), np.inf)
+        mark2 = (int(framePerSeconds * (currentTime + chunkLength / 3) + idx), np.inf)
+        mark3 = (int(framePerSeconds * (currentTime + chunkLength * 2 / 3) + idx), np.inf)
 
         time1 = DTW_path[bisect.bisect_left(DTW_path, mark1)-1][1] * hop_size / fs
         time2 = DTW_path[bisect.bisect_left(DTW_path, mark2)-1][1] * hop_size / fs
