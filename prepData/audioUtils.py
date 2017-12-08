@@ -212,7 +212,7 @@ def getDTWpath(concertTrack, albumTrack, fs, chunkLength=6.0, hop_size=512, metr
                                 step_sizes_sigma=np.array([[1,1],[1,2],[2,1]]),\
                                 weights_add=np.array([1,1,2]),\
                                 weights_mul=np.array([1,1,1]),\
-                                subseq=False)
+                                subseq=True)
 
         for (concertChunkPath, albumTrackPath) in wp[::-1,:]:
             newPoint = (concertChunkPath, albumTrackPath)

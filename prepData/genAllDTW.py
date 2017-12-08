@@ -8,10 +8,10 @@ BASE_DIRECTORY_REFTONAME = './ourquery_lists'
 BASE_DIRECTORY_QUERYAUDIO = '/home/zhwang/data/Paired/prepped'
 BASE_DIRECTORY_REFAUDIO = '/home/nbanerjee/Prep_Dataset/References' 
 
-OUTPUT_PREFIX = "./output-DTW/DTW_aligned"
+OUTPUT_PREFIX = "./output-DTW/FullDTW_mfcc_doubledelta2"
 
-# artists = ['bigkrit', 'chromeo', 'deathcabforcutie', 'foofighters', 'kanyewest', 'maroon5', 'onedirection', 't.i', 'taylorswift', 'tompetty']
-artists = ['kanyewest', 'maroon5', 'onedirection', 't.i', 'taylorswift', 'tompetty']
+artists = ['bigkrit', 'chromeo', 'deathcabforcutie', 'foofighters', 'kanyewest', 'maroon5', 'onedirection', 't.i', 'taylorswift', 'tompetty']
+# artists = ['maroon5']
 
 for artist in artists:
     # Get query to ref file
@@ -87,8 +87,8 @@ for artist in artists:
             refTrack, fs2 = audioUtils.loadFile(refFileName, audioReader=librosa.load)
             queryTrack += np.finfo(np.float32).eps   # To prevent all-0 vector
             refTrack += np.finfo(np.float32).eps     # To prevent all 0 vector 
-            path, offsets, _, _ = audioUtils.getDTWpath(queryTrack, refTrack, fs, metric='cosine')
-            alignedRefTrack, _ = audioUtils.getAlignedAlbumTrack(path, offsets, refTrack, fs)
-            stereo, fs = audioUtils.generateStereoRefTrack(queryTrack, alignedRefTrack, fs)
+            path, offsets, _, _ = audioUtils.getDTWpath(queryTrack, refTrack, fs, metric='cosine', feature='mfcc', verbose=True, full_DTW=True)
+            alignedRefTrack, _ = audioUtils.getAlignedAlbumTrack(path, offsets, refTrack, fs, verbose=True, full_DTW=True)
+            stereo, fs = audioUtils.generateStereoRefTrack(queryTrack, alignedRefTrack, fs, verbose=True)
             audioUtils.writeFile(stereo, fs, OUTPUT_PREFIX + "-{:}-query{:}-cosine.wav".format(artist, line[0]))
     
