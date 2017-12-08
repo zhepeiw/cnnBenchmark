@@ -121,7 +121,7 @@ def getMFCCdelta2(sig, fs, n_mfcc=20):
     mfcc_delta_delta = librosa.feature.delta(mfcc, order=2)
     return mfcc_delta_delta
 
-def getDTWpath(concertTrack, albumTrack, fs, chunkLength=6.0, hop_size=512, metric='cosine', verbose=False):
+def getDTWpath(concertTrack, albumTrack, fs, chunkLength=6.0, hop_size=512, metric='cosine', verbose=False, feature="mfcc"):
     """
     Get subsequence DTW path.
 
@@ -134,6 +134,7 @@ def getDTWpath(concertTrack, albumTrack, fs, chunkLength=6.0, hop_size=512, metr
     hop_size     - (int) used to generate chroma features
     metric       - (string) used to specifiy the distance function for computing DTW
                          recommended: mahalanobis distance
+    feature      - (string) mfcc, chroma
 
     Outputs:
     DTW_path            - [(x,y)] which is an optimal path of subsequence DTW where
@@ -149,20 +150,30 @@ def getDTWpath(concertTrack, albumTrack, fs, chunkLength=6.0, hop_size=512, metr
     """
     concertChunks = generateChunks(concertTrack, fs, chunkLength)
 
-    X_2_chroma = getChroma(albumTrack, fs)
+    if feature == "chroma":
+        X_2 = getChroma(albumTrack, fs)
+    elif feature == "mfcc":
+        X_2 = getMFCCdelta2(albumTrack, fs)
+    else:
+        raise ValueError("feature can only be 'chroma' or 'mfcc'")
+
     prefix = 0
     DTW_path = []
     offsetChunks = []
 
-    albumTrackChroma = X_2_chroma
-    concertTrackChromas = []
+    albumTrackFeature = X_2
+    concertTrackFeatures = []
     for i in range(len(concertChunks)):
-        X_1_chroma = getChroma(concertChunks[i], fs)
-        concertTrackChromas.append(X_1_chroma)
+        if feature == "chroma":
+            X_1 = getChroma(concertChunks[i], fs)
+        elif feature == "mfcc":
+            X_1 = getMFCCdelta2(concertChunks[i], fs)
+
+        concertTrackFeatures.append(X_1)
 
         # Y = long sequence
         # X = relatively short sequence
-        D, wp = librosa.core.dtw(X=X_1_chroma, Y=X_2_chroma, metric=metric, \
+        D, wp = librosa.core.dtw(X=X_1, Y=X_2, metric=metric, \
                                  step_sizes_sigma=np.array([[1,1],[1,2],[2,1]]),\
                                  weights_add=np.array([1,1,2]),\
                                  weights_mul=np.array([1,1,1]),\
@@ -175,8 +186,8 @@ def getDTWpath(concertTrack, albumTrack, fs, chunkLength=6.0, hop_size=512, metr
         offsetChunks.append(prefix)
         if(verbose): print("Chunk {:} offset = {:}[{:}]".format(i, wp[-1][1] * hop_size / fs, prefix))
 
-        prefix += X_1_chroma.shape[1]
-    return DTW_path, offsetChunks, concertTrackChromas, albumTrackChroma
+        prefix += X_1.shape[1]
+    return DTW_path, offsetChunks, concertTrackFeatures, albumTrackFeature
 
 def outputDTWPathCSV(DTW_path, outputFile):
     with open(outputFile, 'w') as csvfile:
