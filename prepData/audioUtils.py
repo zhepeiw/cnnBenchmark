@@ -116,6 +116,11 @@ def writeFile(sig, fs, filename):
 def getChroma(sig, fs, hop_size=512, n_chroma=12):
     return librosa.feature.chroma_cqt(y=sig, sr=fs, hop_length=hop_size, n_chroma=n_chroma, norm=2)
 
+def getMFCCdelta2(sig, fs, n_mfcc=20):
+    mfcc = librosa.feature.mfcc(y=sig, sr=fs, n_mfcc=n_mfcc)
+    mfcc_delta_delta = librosa.feature.delta(mfcc, order=2)
+    return mfcc_delta_delta
+
 def getDTWpath(concertTrack, albumTrack, fs, chunkLength=6.0, hop_size=512, metric='cosine', verbose=False):
     """
     Get subsequence DTW path.
